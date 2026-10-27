@@ -87,7 +87,7 @@ app_ui = ui.page_sidebar(
         ),
         ui.card(
             ui.card_header("Primeras 10 Observaciones del Conjunto", class_="fw-bold"),
-            ui.output_table("tabla_primeros_datos"),
+            ui.output_data_frame("tabla_primeros_datos"),
         ),
         col_widths=[7, 5],
     ),
@@ -150,10 +150,10 @@ def server(input, output, session):
         return fig
 
     # Tabla reactiva básica
-    @render.table
+    @render.data_frame
     def tabla_primeros_datos():
         df = generar_datos()
-        return df.head(10)
+        return render.DataGrid(df.head(10))
 
 
 # -----------------------------------------------------------------------------
