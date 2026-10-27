@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "locale": "Spanish_Mexico.1252",
+  "metadata": {
+    "appmode": "python-shiny",
+    "entrypoint": "app"
+  },
+  "python": {
+    "version": "3.11.0",
+    "package_manager": {
+      "name": "pip",
+      "version": "24.2",
+      "package_file": "requirements.txt"
+    }
+  },
+  "files": {
+    "requirements.txt": {
+      "checksum": "24dd8deef4cd97beefafb2bc67f63a72"
+    },
+    "app.py": {
+      "checksum": "812490306db9c5aaf65875e8c4eb1606"
+    }
+  }
+}
