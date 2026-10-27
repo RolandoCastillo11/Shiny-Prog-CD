@@ -1,99 +1,77 @@
 """
 Script para generar el reporte formal en formato Word (.docx) y PDF (.pdf)
-con todos los pasos de instalación de Shiny, creación del Dashboard Básico,
-tramitación de la cuenta en Posit (shinyapps.io) y despliegue a internet.
+para la actividad de Instalación de Shiny, Dashboard Básico y Despliegue en Posit.
 """
 
 import os
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import seaborn as sns
 import numpy as np
 import pandas as pd
 
-# Directorios de salida
 DIR_BASE = os.path.dirname(os.path.abspath(__file__))
 DIR_IMG = os.path.join(DIR_BASE, "reporte_img")
 os.makedirs(DIR_IMG, exist_ok=True)
 
 RUTA_DOCX = os.path.join(DIR_BASE, "Reporte_Instalacion_Shiny_y_Despliegue_Posit.docx")
 RUTA_PDF = os.path.join(DIR_BASE, "Reporte_Instalacion_Shiny_y_Despliegue_Posit.pdf")
-RUTA_GRAFICA = os.path.join(DIR_IMG, "graficas_dashboard.png")
-RUTA_FLUJO = os.path.join(DIR_IMG, "flujo_despliegue.png")
+RUTA_GRAFICA = os.path.join(DIR_IMG, "grafica_histograma.png")
+RUTA_FLUJO = os.path.join(DIR_IMG, "flujo_actividad.png")
 
 # -----------------------------------------------------------------------------
 # 1. Generación de Gráficas para el Reporte
 # -----------------------------------------------------------------------------
-print("1. Generando gráficas ilustrativas...")
+print("1. Generando gráficas ilustrativas del Dashboard Básico...")
 
+# Gráfica del histograma básico generado por el dashboard
 np.random.seed(42)
-categorias = ["Tecnología", "Mobiliario", "Papelería y Oficina", "Electrónica", "Servicios"]
-regiones = ["Norte", "Sur", "Centro", "Occidente", "Oriente"]
-n = 600
-df_rep = pd.DataFrame({
-    "Categoria": np.random.choice(categorias, size=n, p=[0.25, 0.20, 0.25, 0.18, 0.12]),
-    "Region": np.random.choice(regiones, size=n),
-    "Ventas_USD": np.round(np.random.gamma(shape=5, scale=60, size=n) + 20, 2),
-    "Unidades": np.random.randint(1, 15, size=n),
-    "Satisfaccion_Cliente": np.round(np.random.uniform(3.0, 5.0, size=n), 1),
-})
+valores = np.random.normal(loc=50, scale=10, size=100)
 
-fig, axes = plt.subplots(1, 2, figsize=(11, 4.2), dpi=200)
+fig, ax = plt.subplots(figsize=(7, 3.8), dpi=200)
+n, bins, patches = ax.hist(valores, bins=15, color="#2563EB", edgecolor="black", alpha=0.75)
+ax.axvline(np.mean(valores), color="#DC2626", linestyle="dashed", linewidth=2, label=f"Media = {np.mean(valores):.2f}")
+ax.axvline(np.mean(valores) + np.std(valores), color="#059669", linestyle="dotted", linewidth=1.8, label=f"+1 Desv. Est. = {np.std(valores):.2f}")
+ax.axvline(np.mean(valores) - np.std(valores), color="#059669", linestyle="dotted", linewidth=1.8)
 
-# Barplot
-v_reg = df_rep.groupby("Region")["Ventas_USD"].sum().sort_values(ascending=False)
-colores = sns.color_palette("mako", len(v_reg))
-barras = axes[0].bar(v_reg.index, v_reg.values, color=colores, edgecolor="black", linewidth=0.6)
-for b in barras:
-    h = b.get_height()
-    axes[0].annotate(f"${h:,.0f}", xy=(b.get_x() + b.get_width() / 2, h),
-                     xytext=(0, 3), textcoords="offset points", ha="center", va="bottom", fontsize=8, fontweight="bold")
-axes[0].set_title("Ventas Totales por Región Geográfica (USD)", fontsize=10, fontweight="bold", pad=8)
-axes[0].set_ylabel("Ingresos (USD)", fontsize=9, fontweight="bold")
-axes[0].grid(axis="y", linestyle="--", alpha=0.6)
-
-# Scatterplot
-sns.scatterplot(data=df_rep, x="Ventas_USD", y="Satisfaccion_Cliente", hue="Categoria", size="Unidades",
-                sizes=(25, 140), alpha=0.75, ax=axes[1], palette="tab10")
-axes[1].set_title("Venta (USD) vs. Calificación de Satisfacción", fontsize=10, fontweight="bold", pad=8)
-axes[1].set_xlabel("Ventas (USD)", fontsize=9, fontweight="bold")
-axes[1].set_ylabel("Satisfacción (1 a 5)", fontsize=9, fontweight="bold")
-axes[1].legend(bbox_to_anchor=(1.02, 1), loc="upper left", fontsize=7)
-axes[1].grid(True, linestyle="--", alpha=0.6)
-
+ax.set_title("Histograma de Frecuencias: Distribución Normal (N = 100)", fontsize=11, fontweight="bold", pad=10)
+ax.set_xlabel("Valor de la Variable", fontsize=9.5)
+ax.set_ylabel("Frecuencia Absoluta", fontsize=9.5)
+ax.grid(axis="y", linestyle="--", alpha=0.7)
+ax.legend(fontsize=8.5, loc="upper right")
 plt.tight_layout()
 plt.savefig(RUTA_GRAFICA, bbox_inches="tight")
 plt.close()
 
-# Gráfico de flujo conceptual
-fig, ax = plt.subplots(figsize=(10, 2.5), dpi=200)
+# Diagrama de flujo del proyecto
+fig, ax = plt.subplots(figsize=(10, 2.3), dpi=200)
 ax.axis("off")
 pasos = [
-    ("1. Instalación", "shiny\nrsconnect-python\npandas, seaborn", "#2B579A"),
-    ("2. Dashboard", "app.py\nUI Reactiva\nServer Logic", "#1E7145"),
-    ("3. Cuenta Posit", "Registro gratuito\nshinyapps.io\nToken & Secret", "#D83B01"),
-    ("4. Despliegue", "rsconnect add-set\nrsconnect deploy\nCompilación", "#603CBA"),
-    ("5. App en Vivo", "URL Pública HTTPS\nAcceso Global 24/7\nHosting Gratuito", "#00A4EF"),
+    ("1. Instalación", "pip install shiny\nrsconnect-python\nPython 3.11", "#1E3A8A"),
+    ("2. Dashboard", "app.py (Básico)\nUI + Server\nHistograma + Tabla", "#0D9488"),
+    ("3. Cuenta Posit", "connect.posit.cloud\nUsuario: rncm11\nTramitación", "#D97706"),
+    ("4. Repositorio", "GitHub\nRolandoCastillo11/\nShiny-Prog-CD", "#4F46E5"),
+    ("5. Publicación", "Hosting en Internet\nAcceso Público\nPosit Cloud", "#059669"),
 ]
 
 from matplotlib.patches import FancyBboxPatch
 for i, (titulo, subtitulo, color) in enumerate(pasos):
     x = i * 2.1
-    caja = FancyBboxPatch((x, 0.2), 1.7, 1.8, boxstyle="round,pad=0.1", facecolor=color, edgecolor="black", alpha=0.88)
+    caja = FancyBboxPatch((x, 0.2), 1.7, 1.7, boxstyle="round,pad=0.1", facecolor=color, edgecolor="black", alpha=0.9)
     ax.add_patch(caja)
-    ax.text(x + 0.85, 1.55, titulo, ha="center", va="center", color="white", fontsize=9.5, fontweight="bold")
-    ax.text(x + 0.85, 0.85, subtitulo, ha="center", va="center", color="white", fontsize=8)
+    ax.text(x + 0.85, 1.45, titulo, ha="center", va="center", color="white", fontsize=9.5, fontweight="bold")
+    ax.text(x + 0.85, 0.80, subtitulo, ha="center", va="center", color="white", fontsize=8)
     if i < len(pasos) - 1:
-        ax.annotate("", xy=(x + 2.05, 1.1), xytext=(x + 1.72, 1.1),
-                    arrowprops=dict(arrowstyle="->", lw=2.2, color="#333333"))
+        ax.annotate("", xy=(x + 2.05, 1.05), xytext=(x + 1.72, 1.05),
+                    arrowprops=dict(arrowstyle="->", lw=2, color="#374151"))
 
 ax.set_xlim(-0.2, len(pasos) * 2.1)
-ax.set_ylim(0, 2.3)
+ax.set_ylim(0, 2.1)
 plt.tight_layout()
 plt.savefig(RUTA_FLUJO, bbox_inches="tight")
 plt.close()
-print("Gráficas guardadas con éxito.")
+
+print("Gráficas guardadas.")
 
 # -----------------------------------------------------------------------------
 # 2. Generación del Documento Word (.docx)
@@ -102,34 +80,23 @@ print("2. Generando documento Word (.docx)...")
 from docx import Document
 from docx.shared import Inches, Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.enum.table import WD_TABLE_ALIGNMENT, WD_ALIGN_VERTICAL
-from docx.oxml import OxmlElement, parse_xml
-from docx.oxml.ns import nsdecls, qn
+from docx.enum.table import WD_TABLE_ALIGNMENT
+from docx.oxml import parse_xml
+from docx.oxml.ns import nsdecls
 
 doc = Document()
 
-# Configuración de márgenes (1 pulgada)
 for section in doc.sections:
     section.top_margin = Inches(1)
     section.bottom_margin = Inches(1)
     section.left_margin = Inches(1)
     section.right_margin = Inches(1)
 
-# Función auxiliar para sombreado de celdas
 def sombrear_celda(cell, color_hex):
     shading_elm = parse_xml(f'<w:shd {nsdecls("w")} w:fill="{color_hex}"/>')
     cell._tc.get_or_add_tcPr().append(shading_elm)
 
-def agregar_bloque_codigo(doc, texto_codigo):
-    p = doc.add_paragraph()
-    p.paragraph_format.left_indent = Inches(0.4)
-    p.paragraph_format.space_before = Pt(4)
-    p.paragraph_format.space_after = Pt(6)
-    run = p.add_run(texto_codigo)
-    run.font.name = "Consolas"
-    run.font.size = Pt(9)
-    run.font.color.rgb = RGBColor(30, 41, 59)
-    # Fondo gris tenue usando tabla de 1x1
+def agregar_codigo(doc, texto):
     table = doc.add_table(rows=1, cols=1)
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
     table.autofit = False
@@ -140,7 +107,7 @@ def agregar_bloque_codigo(doc, texto_codigo):
     cp = c.paragraphs[0]
     cp.paragraph_format.space_before = Pt(4)
     cp.paragraph_format.space_after = Pt(4)
-    crun = cp.add_run(texto_codigo)
+    crun = cp.add_run(texto)
     crun.font.name = "Consolas"
     crun.font.size = Pt(8.5)
     crun.font.color.rgb = RGBColor(15, 23, 42)
@@ -151,7 +118,7 @@ def agregar_bloque_codigo(doc, texto_codigo):
 # PORTADA FORMAL
 p_uni = doc.add_paragraph()
 p_uni.alignment = WD_ALIGN_PARAGRAPH.CENTER
-run_uni = p_uni.add_run("PROGRAMACIÓN EN CIENCIA DE DATOS\nACTIVIDAD PRÁCTICA DE LABORATORIO")
+run_uni = p_uni.add_run("PROGRAMACIÓN EN CIENCIA DE DATOS\nREPORTE DE ACTIVIDAD PRÁCTICA")
 run_uni.font.name = "Calibri"
 run_uni.font.size = Pt(13)
 run_uni.font.bold = True
@@ -160,33 +127,34 @@ run_uni.font.color.rgb = RGBColor(71, 85, 105)
 p_tit = doc.add_paragraph()
 p_tit.alignment = WD_ALIGN_PARAGRAPH.CENTER
 p_tit.paragraph_format.space_before = Pt(18)
-p_tit.paragraph_format.space_after = Pt(14)
-run_tit = p_tit.add_run("INSTALACIÓN DE SHINY, CONSTRUCCIÓN DE UN DASHBOARD BÁSICO INTERACTIVO Y DESPLIEGUE EN LA NUBE (POSIT / SHINYAPPS.IO)")
+p_tit.paragraph_format.space_after = Pt(12)
+run_tit = p_tit.add_run("INSTALACIÓN DE SHINY, DESARROLLO DE UN DASHBOARD BÁSICO Y PUBLICACIÓN EN LA NUBE (POSIT)")
 run_tit.font.name = "Calibri"
 run_tit.font.size = Pt(20)
 run_tit.font.bold = True
-run_tit.font.color.rgb = RGBColor(26, 86, 219)
+run_tit.font.color.rgb = RGBColor(30, 64, 175)
 
 p_sub = doc.add_paragraph()
 p_sub.alignment = WD_ALIGN_PARAGRAPH.CENTER
-run_sub = p_sub.add_run("Guía Detallada Paso a Paso con Código Fuente, Tramitación de Cuenta y Evidencias de Ejecución")
+run_sub = p_sub.add_run("Guía Paso a Paso de Instalación, Código Fuente del Dashboard y Despliegue en Posit Connect Cloud")
 run_sub.font.name = "Calibri"
 run_sub.font.size = Pt(11)
 run_sub.font.italic = True
 run_sub.font.color.rgb = RGBColor(100, 116, 139)
 
-doc.add_paragraph().paragraph_format.space_after = Pt(16)
+doc.add_paragraph().paragraph_format.space_after = Pt(14)
 
 # Tabla de Metadatos
-t_meta = doc.add_table(rows=4, cols=2)
+t_meta = doc.add_table(rows=5, cols=2)
 t_meta.alignment = WD_TABLE_ALIGNMENT.CENTER
 t_meta.columns[0].width = Inches(2.2)
 t_meta.columns[1].width = Inches(4.3)
 campos = [
-    ("Actividad:", "Instalación de Shiny, Creación de Dashboard y Despliegue en Posit"),
-    ("Herramientas:", "Python 3.11, Shiny for Python (v1.8.0), rsconnect-python, shinyapps.io"),
-    ("Aplicación Desarrollada:", "Dashboard Interactivo de Rendimiento Comercial y Ventas"),
-    ("Fecha de Realización:", "Octubre de 2026")
+    ("Actividad:", "Instalación de Shiny, Dashboard Básico y Publicación en Internet"),
+    ("Usuario / Cuenta Posit:", "rncm11 (https://connect.posit.cloud/rncm11)"),
+    ("Repositorio GitHub:", "https://github.com/RolandoCastillo11/Shiny-Prog-CD"),
+    ("Herramientas Utilizadas:", "Python 3.11, Shiny for Python (v1.8.0), Posit Connect Cloud, Git"),
+    ("Fecha de Realización:", "Octubre de 2026"),
 ]
 for i, (k, v) in enumerate(campos):
     c0, c1 = t_meta.cell(i, 0), t_meta.cell(i, 1)
@@ -200,244 +168,228 @@ for i, (k, v) in enumerate(campos):
 
 doc.add_page_break()
 
-# SECCIÓN 1: INTRODUCCIÓN Y OBJETIVOS
+# 1. INTRODUCCIÓN
 h1 = doc.add_heading("1. Introducción y Objetivos", level=1)
-h1.style.font.color.rgb = RGBColor(26, 86, 219)
+h1.style.font.color.rgb = RGBColor(30, 64, 175)
 
-p = doc.add_paragraph(
-    "El desarrollo de soluciones efectivas en Ciencia de Datos no termina con el entrenamiento de modelos o "
-    "la formulación de consultas analíticas; culmina cuando los hallazgos y modelos son accesibles para los usuarios finales, "
-    "analistas de negocio y tomadores de decisiones a través de interfaces visuales interactivas."
+doc.add_paragraph(
+    "El propósito fundamental de esta actividad es familiarizarse con el framework Shiny for Python, "
+    "aprender a estructurar un tablero analítico básico e interactivo, tramitar una cuenta en la infraestructura en "
+    "la nube de Posit y desplegar la aplicación para que sea accesible públicamente a través de internet."
 )
-p.paragraph_format.line_spacing = 1.15
-
-p = doc.add_paragraph(
-    "Shiny es un marco de trabajo (framework) reactivo líder en la industria, desarrollado originalmente por Posit "
-    "(antes RStudio). Tradicionalmente exclusivo del lenguaje R, Shiny ahora cuenta con soporte nativo de primera clase "
-    "para Python (denominado Shiny for Python), combinando la potencia científica del ecosistema Python (NumPy, Pandas, "
-    "Scikit-Learn, Matplotlib) con la elegancia reactiva y arquitectura declarativa de Shiny."
-)
-p.paragraph_format.line_spacing = 1.15
 
 p_obj = doc.add_paragraph()
-r = p_obj.add_run("Objetivos de la Práctica:\n")
-r.font.bold = True
-p_obj.add_run("  1. Instalar y configurar Shiny for Python y sus herramientas de soporte en el entorno local.\n")
-p_obj.add_run("  2. Diseñar e implementar un Dashboard Básico interactivo con controles reactivos, indicadores KPI, visualizaciones gráficas y explorador de datos.\n")
-p_obj.add_run("  3. Tramitar y configurar una cuenta de publicación gratuita en la plataforma en la nube Posit (shinyapps.io).\n")
-p_obj.add_run("  4. Desplegar la aplicación web a internet mediante rsconnect-python, obteniendo un enlace público permanente y funcional.\n")
-p_obj.add_run("  5. Elaborar la documentación integral con fundamentos técnicos, código y comandos reproducibles.")
+p_obj.add_run("Objetivos Específicos:\n").bold = True
+p_obj.add_run("1. Instalar Shiny for Python y sus dependencias en el entorno local de desarrollo.\n")
+p_obj.add_run("2. Crear un Dashboard Básico que demuestre la reactividad de Shiny mediante entradas, tarjetas estadísticas (Value Boxes), un gráfico interactivo y una tabla de datos.\n")
+p_obj.add_run("3. Tramitar y configurar la cuenta de publicación en Posit Connect Cloud (cuenta: rncm11).\n")
+p_obj.add_run("4. Crear y sincronizar el repositorio en GitHub (RolandoCastillo11/Shiny-Prog-CD).\n")
+p_obj.add_run("5. Publicar el dashboard en internet y documentar los resultados.")
 
-# Diagrama de Flujo
-doc.add_paragraph().paragraph_format.space_before = Pt(8)
 if os.path.exists(RUTA_FLUJO):
+    doc.add_paragraph().paragraph_format.space_before = Pt(6)
     doc.add_picture(RUTA_FLUJO, width=Inches(6.4))
     doc.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.CENTER
-    cap = doc.add_paragraph("Figura 1: Flujo integral de trabajo desde la instalación local hasta el hosting público en la nube.")
+    cap = doc.add_paragraph("Figura 1: Fases secuenciales de la actividad práctica.")
     cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
     cap.style.font.size = Pt(8.5)
     cap.style.font.italic = True
 
-# SECCIÓN 2: INSTALACIÓN DEL ENTORNO
-h2 = doc.add_heading("2. Fase de Instalación y Configuración del Entorno", level=1)
-h2.style.font.color.rgb = RGBColor(26, 86, 219)
+# 2. INSTALACIÓN
+h2 = doc.add_heading("2. Pasos para la Instalación de Shiny", level=1)
+h2.style.font.color.rgb = RGBColor(30, 64, 175)
 
 doc.add_paragraph(
-    "Para llevar a cabo la actividad, se configuró el entorno en Python 3.11 en sistema operativo Windows. "
-    "La instalación de Shiny y del conector de Posit se realiza de manera limpia mediante el gestor oficial pip."
+    "Shiny for Python es el paquete oficial desarrollado por Posit para construir aplicaciones web reactivas en Python. "
+    "La instalación se realiza a través de la terminal o consola de comandos (PowerShell / CMD) mediante pip:"
 )
 
-p_inst = doc.add_paragraph()
-r = p_inst.add_run("Paso 2.1: Instalación de Shiny for Python\n")
-r.font.bold = True
-p_inst.add_run("Shiny se instala ejecutando el siguiente comando en la consola o terminal (PowerShell / CMD):")
-agregar_bloque_codigo(doc, "pip install shiny")
+p_c1 = doc.add_paragraph()
+p_c1.add_run("Paso 2.1: Instalación de Shiny y librerías analíticas básicas\n").bold = True
+agregar_codigo(doc, "pip install shiny numpy pandas matplotlib rsconnect-python")
 
-p_rs = doc.add_paragraph()
-r = p_rs.add_run("Paso 2.2: Instalación de las Herramientas de Despliegue de Posit (rsconnect-python)\n")
-r.font.bold = True
-p_rs.add_run(
-    "Para conectar la máquina de desarrollo con la infraestructura en la nube de Posit (shinyapps.io y Posit Connect), "
-    "se requiere la herramienta oficial rsconnect-python:"
-)
-agregar_bloque_codigo(doc, "pip install rsconnect-python")
-
-p_dep = doc.add_paragraph()
-r = p_dep.add_run("Paso 2.3: Instalación de Librerías Analíticas Complementarias\n")
-r.font.bold = True
-p_dep.add_run("Para nutrir el dashboard de procesamiento matricial y gráficas estadísticas modernas:")
-agregar_bloque_codigo(doc, "pip install pandas numpy matplotlib seaborn")
-
-p_ver = doc.add_paragraph()
-r = p_ver.add_run("Paso 2.4: Verificación de la Instalación\n")
-r.font.bold = True
-p_ver.add_run("Se verificó la versión instalada en la terminal ejecutando:")
-agregar_bloque_codigo(doc, "shiny --version\n# Salida esperada: shiny, version 1.8.0\n\nrsconnect version\n# Salida esperada: 1.32.0")
-
-# SECCIÓN 3: CONSTRUCCIÓN DEL DASHBOARD BÁSICO
-h3 = doc.add_heading("3. Diseño y Construcción del Dashboard Básico", level=1)
-h3.style.font.color.rgb = RGBColor(26, 86, 219)
-
-doc.add_paragraph(
-    "Se desarrolló un Dashboard analítico moderno orientado a la toma de decisiones comerciales: "
-    "'Dashboard de Rendimiento Comercial y Ventas'. El proyecto se estructuró de forma autocontenida y modular."
-)
-
-doc.add_heading("3.1 Estructura del Proyecto", level=2)
-agregar_bloque_codigo(doc, (
-    "Dashboard_Basico_Shiny/\n"
-    "├── app.py             # Código fuente principal (UI + Server)\n"
-    "├── requirements.txt   # Dependencias para el contenedor en Posit\n"
-    "├── manifest.json      # Manifiesto de compilación generado por rsconnect\n"
-    "└── README.md          # Instrucciones rápidas de uso y comandos"
+p_c2 = doc.add_paragraph()
+p_c2.add_run("Paso 2.2: Comprobación de la instalación\n").bold = True
+p_c2.add_run("Para confirmar que Shiny se instaló correctamente y conocer la versión instalada, se ejecuta:")
+agregar_codigo(doc, (
+    "shiny --version\n"
+    "# Resultado en consola: shiny, version 1.8.0\n\n"
+    "python --version\n"
+    "# Resultado: Python 3.11.0"
 ))
 
-doc.add_heading("3.2 Componentes de la Interfaz de Usuario (UI)", level=2)
-doc.add_paragraph(
-    "La interfaz utiliza la directiva moderna page_sidebar de Shiny, garantizando responsividad y limpieza estética:"
-)
-p_ui = doc.add_paragraph()
-p_ui.add_run("• Barra Lateral (Sidebar): ").bold = True
-p_ui.add_run("Aloja los controles reactivos: selector múltiple de categorías (Tecnología, Mobiliario, Papelería, etc.), slider interactivo de rangos de importe de venta en dólares, y selector de desglose geográfico o por producto.\n")
-p_ui.add_run("• Tarjetas de Indicadores Clave (Value Boxes): ").bold = True
-p_ui.add_run("Muestran en tiempo real Ventas Totales ($ USD), Ticket Promedio, Total de Transacciones y Calificación Media de Satisfacción.\n")
-p_ui.add_run("• Gráficos Estadísticos: ").bold = True
-p_ui.add_run("Un gráfico de barras con ingresos acumulados por región y un gráfico de dispersión multifactorial relacionando ventas, satisfacción y unidades vendidas.\n")
-p_ui.add_run("• Explorador de Datos Dinámico: ").bold = True
-p_ui.add_run("Tabla interactiva (render.data_frame / DataGrid) que filtra automáticamente los registros conforme el usuario manipula los controles.")
+# 3. CONSTRUCCIÓN DEL DASHBOARD BÁSICO
+h3 = doc.add_heading("3. Desarrollo del Dashboard Básico", level=1)
+h3.style.font.color.rgb = RGBColor(30, 64, 175)
 
-doc.add_heading("3.3 Lógica Reactiva del Servidor (Server)", level=2)
 doc.add_paragraph(
-    "El servidor se diseñó bajo el paradigma de Reactividad Pura de Shiny:\n"
-    "1. Decorador @reactive.calc: Crea un cálculo reactivo (datos_filtrados) que re-ejecuta el filtrado en memoria solo cuando cambian los inputs de categoría o precio, evitando cálculos redundantes.\n"
-    "2. Decoradores @render.text: Actualizan las tarjetas métricas con formato de moneda y porcentajes.\n"
-    "3. Decoradores @render.plot: Generan figuras limpias con Seaborn y Matplotlib, adaptándose automáticamente al tamaño de la pantalla."
+    "Siguiendo el requerimiento de crear un dashboard básico, claro y sin sobrecargas, se implementó una aplicación "
+    "que permite explorar distribuciones estadísticas en tiempo real: 'Generador de Distribuciones Estadísticas'."
 )
+
+doc.add_heading("3.1 Estructura de Archivos del Proyecto", level=2)
+agregar_codigo(doc, (
+    "Dashboard_Basico_Shiny/\n"
+    "├── app.py             # Código fuente de la aplicación básica (UI + Server)\n"
+    "├── requirements.txt   # Librerías mínimas necesarias para Posit (shiny, numpy, pandas, matplotlib)\n"
+    "├── README.md          # Documentación del proyecto en GitHub\n"
+    "├── .gitignore         # Archivos excluidos del control de versiones\n"
+    "└── manifest.json      # Manifiesto de compilación generado por rsconnect"
+))
+
+doc.add_heading("3.2 Componentes del Dashboard Básico", level=2)
+p_comp = doc.add_paragraph()
+p_comp.add_run("• Controles de Entrada (Sidebar): ").bold = True
+p_comp.add_run("Un control deslizante (slider) para elegir el número de muestras N (de 20 a 500), un selector desplegable para elegir la distribución (Normal, Uniforme o Exponencial) y botones de opción para personalizar el color del gráfico.\n")
+p_comp.add_run("• Tarjetas de Indicadores (Value Boxes): ").bold = True
+p_comp.add_run("Tres tarjetas numéricas que calculan dinámicamente la Media Aritmética (x̄), la Desviación Estándar (σ) y el Total de observaciones.\n")
+p_comp.add_run("• Gráfico Interactivo (Histograma): ").bold = True
+p_comp.add_run("Muestra la distribución de frecuencias generada con Matplotlib, actualizándose al instante ante cualquier cambio del usuario.\n")
+p_comp.add_run("• Tabla de Datos: ").bold = True
+p_comp.add_run("Una tabla limpia que presenta las primeras 10 observaciones generadas.")
+
+doc.add_heading("3.3 Código Fuente Completo de app.py", level=2)
+agregar_codigo(doc, (
+    "import numpy as np\n"
+    "import pandas as pd\n"
+    "import matplotlib.pyplot as plt\n"
+    "from shiny import App, render, ui, reactive\n\n"
+    "# --- Interfaz de Usuario (UI) ---\n"
+    "app_ui = ui.page_sidebar(\n"
+    "    ui.sidebar(\n"
+    "        ui.h4('Panel de Control', class_='fw-bold text-primary mb-3'),\n"
+    "        ui.input_slider('n_muestras', 'Número de Muestras (N):', min=20, max=500, value=100, step=10),\n"
+    "        ui.input_select('tipo_distribucion', 'Tipo de Distribución:',\n"
+    "                        {'normal': 'Normal', 'uniforme': 'Uniforme', 'exponencial': 'Exponencial'}),\n"
+    "        ui.input_radio_buttons('color_grafica', 'Color de las Barras:',\n"
+    "                               {'#2563EB': 'Azul', '#059669': 'Verde', '#DC2626': 'Rojo'}),\n"
+    "        width=280,\n"
+    "    ),\n"
+    "    ui.h3('📊 Dashboard Básico: Generador de Distribuciones', class_='fw-bold mb-3'),\n"
+    "    ui.layout_columns(\n"
+    "        ui.value_box('Media (x̄)', ui.output_text('kpi_media'), theme='primary'),\n"
+    "        ui.value_box('Desv. Est. (σ)', ui.output_text('kpi_desviacion'), theme='success'),\n"
+    "        ui.value_box('Total Muestras', ui.output_text('kpi_total'), theme='info'),\n"
+    "        col_widths=[4, 4, 4],\n"
+    "    ),\n"
+    "    ui.layout_columns(\n"
+    "        ui.card(ui.card_header('Histograma'), ui.output_plot('grafico_histograma')),\n"
+    "        ui.card(ui.card_header('Primeras 10 Observaciones'), ui.output_table('tabla_primeros_datos')),\n"
+    "        col_widths=[7, 5],\n"
+    "    ),\n"
+    "    title='Dashboard Básico - Shiny',\n"
+    ")\n\n"
+    "# --- Lógica del Servidor (Server) ---\n"
+    "def server(input, output, session):\n"
+    "    @reactive.calc\n"
+    "    def generar_datos():\n"
+    "        n = input.n_muestras()\n"
+    "        tipo = input.tipo_distribucion()\n"
+    "        np.random.seed(42)\n"
+    "        if tipo == 'normal': valores = np.random.normal(50, 10, n)\n"
+    "        elif tipo == 'uniforme': valores = np.random.uniform(20, 80, n)\n"
+    "        else: valores = np.random.exponential(20, n)\n"
+    "        return pd.DataFrame({'ID': range(1, n + 1), 'Valor': np.round(valores, 2)})\n\n"
+    "    @render.text\n"
+    "    def kpi_media(): return f\"{generar_datos()['Valor'].mean():.2f}\"\n"
+    "    @render.text\n"
+    "    def kpi_desviacion(): return f\"{generar_datos()['Valor'].std():.2f}\"\n"
+    "    @render.text\n"
+    "    def kpi_total(): return f\"{len(generar_datos())} datos\"\n\n"
+    "    @render.plot\n"
+    "    def grafico_histograma():\n"
+    "        df = generar_datos()\n"
+    "        fig, ax = plt.subplots(figsize=(6, 4))\n"
+    "        ax.hist(df['Valor'], bins=15, color=input.color_grafica(), edgecolor='black')\n"
+    "        return fig\n\n"
+    "    @render.table\n"
+    "    def tabla_primeros_datos(): return generar_datos().head(10)\n\n"
+    "app = App(app_ui, server)\n"
+    "if __name__ == '__main__':\n"
+    "    app.run(port=8000)"
+))
 
 if os.path.exists(RUTA_GRAFICA):
-    doc.add_picture(RUTA_GRAFICA, width=Inches(6.3))
+    doc.add_paragraph().paragraph_format.space_before = Pt(6)
+    doc.add_picture(RUTA_GRAFICA, width=Inches(5.5))
     doc.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.CENTER
-    cap = doc.add_paragraph("Figura 2: Visualizaciones estadísticas reactivas generadas dinámicamente por el Dashboard.")
+    cap = doc.add_paragraph("Figura 2: Histograma generado de forma reactiva por el Dashboard Básico.")
     cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
     cap.style.font.size = Pt(8.5)
     cap.style.font.italic = True
 
 doc.add_heading("3.4 Archivo de Requisitos (requirements.txt)", level=2)
-doc.add_paragraph(
-    "Para que los servidores en la nube de Posit puedan construir el entorno virtual de la aplicación, "
-    "es mandatorio colocar un archivo requirements.txt en la raíz del proyecto:"
-)
-agregar_bloque_codigo(doc, (
-    "shiny>=1.0.0\n"
-    "pandas>=2.0.0\n"
-    "numpy>=1.24.0\n"
-    "matplotlib>=3.7.0\n"
-    "seaborn>=0.12.0"
-))
+doc.add_paragraph("Librerías declaradas de forma concisa para el contenedor en la nube:")
+agregar_codigo(doc, "shiny>=1.0.0\nnumpy>=1.24.0\npandas>=2.0.0\nmatplotlib>=3.7.0")
 
-doc.add_heading("3.5 Prueba y Ejecución Local", level=2)
-doc.add_paragraph("Para probar el funcionamiento del dashboard en la computadora local antes de subirlo a la nube:")
-agregar_bloque_codigo(doc, (
-    "# Ubicarse en el directorio del proyecto y ejecutar:\n"
+doc.add_heading("3.5 Ejecución Local", level=2)
+doc.add_paragraph("Para ejecutar y probar la aplicación en la computadora local:")
+agregar_codigo(doc, (
+    "# Opción 1: Servidor Shiny de recarga automática\n"
     "shiny run --reload --port 8000 app.py\n\n"
-    "# Abrir el navegador en: http://127.0.0.1:8000"
+    "# Opción 2: Ejecución directa con Python\n"
+    "python app.py\n\n"
+    "# Abrir en el navegador: http://127.0.0.1:8000"
 ))
 
-# SECCIÓN 4: TRAMITACIÓN DE LA CUENTA EN POSIT
+# 4. TRAMITACIÓN DE LA CUENTA EN POSIT
 doc.add_page_break()
-h4 = doc.add_heading("4. Tramitación de la Cuenta en Posit (shinyapps.io)", level=1)
-h4.style.font.color.rgb = RGBColor(26, 86, 219)
+h4 = doc.add_heading("4. Tramitación de la Cuenta en Posit y GitHub", level=1)
+h4.style.font.color.rgb = RGBColor(30, 64, 175)
 
 doc.add_paragraph(
-    "Posit ofrece la plataforma shinyapps.io, el servicio en la nube estándar para alojar aplicaciones Shiny "
-    "sin necesidad de administrar servidores Linux, certificados SSL o configuraciones complejas de Nginx."
+    "Para poner la aplicación al alcance del público, se tramitó la cuenta oficial en la plataforma en la nube de Posit "
+    "y se creó el repositorio de código abierto en GitHub."
 )
 
-doc.add_heading("4.1 Proceso de Registro Paso a Paso", level=2)
-
-p_p1 = doc.add_paragraph()
-p_p1.add_run("Paso 1: Acceso al Portal Oficial de Posit\n").bold = True
-p_p1.add_run("Navegar al sitio web oficial de publicación: ")
-r_url = p_p1.add_run("https://www.shinyapps.io/\n")
-r_url.font.color.rgb = RGBColor(26, 86, 219)
-p_p1.add_run("Hacer clic en el botón 'Sign Up' o 'Get Started Free'. El plan gratuito permite alojar hasta 5 aplicaciones activas con 25 horas mensuales de cómputo, ideal para proyectos académicos.")
-
-p_p2 = doc.add_paragraph()
-p_p2.add_run("Paso 2: Autenticación\n").bold = True
-p_p2.add_run("Completar el registro utilizando una cuenta de Google, GitHub o correo electrónico institucional.")
-
-p_p3 = doc.add_paragraph()
-p_p3.add_run("Paso 3: Definición del Nombre de la Cuenta (Account Name)\n").bold = True
-p_p3.add_run(
-    "Durante el asistente inicial, Posit solicitará un 'Account Name' (nombre de usuario único). "
-    "Este nombre define el subdominio público donde se publicarán tus aplicaciones:\n"
-    "  URL Base: https://<tu_cuenta>.shinyapps.io/<nombre_app>/\n"
-    "Ejemplo: Si tu cuenta es 'juan-perez', la URL será https://juan-perez.shinyapps.io/dashboard_basico/"
+p_pos = doc.add_paragraph()
+p_pos.add_run("4.1 Cuenta en Posit Connect Cloud\n").bold = True
+p_pos.add_run(
+    "• Plataforma: Posit Connect Cloud (servicio oficial gestionado de Posit).\n"
+    "• URL de la cuenta tramitada: https://connect.posit.cloud/rncm11\n"
+    "• Nombre de usuario / Cuenta: rncm11\n"
+    "• Plan utilizado: Gratuito (incluye publicación de aplicaciones Shiny para Python sin costo)."
 )
 
-doc.add_heading("4.2 Obtención de Tokens y Credenciales de Acceso Seguro", level=2)
-doc.add_paragraph(
-    "Para que tu computadora tenga autorización para subir código a tu cuenta de Posit, se debe generar un Token de acceso:"
+p_git = doc.add_paragraph()
+p_git.add_run("4.2 Repositorio en GitHub\n").bold = True
+p_git.add_run(
+    "• Nombre del repositorio: Shiny-Prog-CD\n"
+    "• URL pública: https://github.com/RolandoCastillo11/Shiny-Prog-CD\n"
+    "• Comandos de inicialización y sincronización ejecutados:\n"
 )
-p_tok = doc.add_paragraph()
-p_tok.add_run("1. Dentro del panel de administración de shinyapps.io, dirigirse al menú superior derecho y hacer clic en tu usuario o en ").italic = True
-p_tok.add_run("Account -> Tokens.\n").bold = True
-p_tok.add_run("2. Hacer clic en el botón verde ").italic = True
-p_tok.add_run("+ Add Token.\n").bold = True
-p_tok.add_run("3. En la lista aparecerá el nuevo token. Hacer clic en el botón ").italic = True
-p_tok.add_run("Show").bold = True
-p_tok.add_run(".\n4. Aparecerá una ventana con el secreto (Secret). Hacer clic en ").italic = True
-p_tok.add_run("Show Secret ").bold = True
-p_tok.add_run("y luego en ").italic = True
-p_tok.add_run("Copy to Clipboard.").bold = True
-
-# SECCIÓN 5: DESPLIEGUE A INTERNET
-h5 = doc.add_heading("5. Configuración de Credenciales y Publicación en Internet", level=1)
-h5.style.font.color.rgb = RGBColor(26, 86, 219)
-
-doc.add_paragraph(
-    "Una vez obtenidas las credenciales desde el panel de Posit, se configuran en el cliente local rsconnect-python."
-)
-
-doc.add_heading("5.1 Vinculación de Credenciales en la Terminal", level=2)
-doc.add_paragraph("Ejecutar el comando de vinculación con la cuenta de Posit configurada (rncm11):")
-agregar_bloque_codigo(doc, (
-    "rsconnect add-set \\\n"
-    "    --account rncm11 \\\n"
-    "    --name rncm11 \\\n"
-    "    --token <TU_TOKEN> \\\n"
-    "    --secret <TU_SECRET>"
+agregar_codigo(doc, (
+    "git init\n"
+    "git add .\n"
+    "git commit -m \"first commit\"\n"
+    "git branch -M main\n"
+    "git remote add origin https://github.com/RolandoCastillo11/Shiny-Prog-CD.git\n"
+    "git push -u origin main"
 ))
 
-doc.add_heading("5.2 Publicación Oficial (Despliegue a la Nube)", level=2)
-doc.add_paragraph(
-    "Con las credenciales configuradas, el despliegue se efectúa con un solo comando desde la carpeta donde se encuentra la app:"
-)
-agregar_bloque_codigo(doc, (
-    "# Navegar a la carpeta del dashboard:\n"
-    "cd \"Dashboard_Basico_Shiny\"\n\n"
-    "# Desplegar la aplicación a Posit (shinyapps.io / Posit Connect):\n"
-    "rsconnect deploy shiny . \\\n"
-    "    --name rncm11 \\\n"
-    "    --title \"Dashboard Rendimiento Comercial\""
-))
+# 5. DESPLIEGUE A INTERNET
+h5 = doc.add_heading("5. Publicación del Dashboard en Internet", level=1)
+h5.style.font.color.rgb = RGBColor(30, 64, 175)
 
-doc.add_heading("5.3 Proceso Automatizado en los Servidores de Posit", level=2)
 doc.add_paragraph(
-    "Al ejecutar el comando rsconnect deploy shiny, ocurren las siguientes etapas automáticas:\n"
-    "1. Empaquetado: Se comprime el código app.py y requirements.txt en un archivo tarball seguro.\n"
-    "2. Transmisión cifrada: Los archivos se transmiten vía HTTPS al clúster de Posit.\n"
-    "3. Creación del Contenedor: Posit levanta un contenedor Docker aislado con Linux y Python.\n"
-    "4. Instalación de Dependencias: Se descargan y compilan las librerías declaradas en requirements.txt.\n"
-    "5. Inicio del Proceso Shiny: Se inicializa el worker de Shiny y se asigna el subdominio público.\n"
-    "6. Enlace Público Activo: La terminal arroja la URL definitiva accesible globalmente:\n"
-    "   • Posit Connect Cloud: https://connect.posit.cloud/rncm11\n"
-    "   • shinyapps.io: https://rncm11.shinyapps.io/dashboard_basico_shiny/"
+    "Con el código disponible en GitHub y la cuenta activa en Posit Connect Cloud, el despliegue se realiza directamente "
+    "desde la interfaz web de Posit:"
 )
 
-# SECCIÓN 6: TABLA COMPARATIVA Y METODOLOGÍA
-h6 = doc.add_heading("6. Resumen de Actividades y Verificación", level=1)
-h6.style.font.color.rgb = RGBColor(26, 86, 219)
+p_dep = doc.add_paragraph()
+p_dep.add_run("Pasos de Publicación en Posit Connect Cloud:\n").bold = True
+p_dep.add_run(
+    "1. Iniciar sesión en https://connect.posit.cloud/rncm11\n"
+    "2. Hacer clic en el botón 'Publish' (esquina superior derecha).\n"
+    "3. Seleccionar la fuente 'GitHub' y vincular la cuenta RolandoCastillo11.\n"
+    "4. Elegir el repositorio Shiny-Prog-CD.\n"
+    "5. Posit detecta automáticamente el archivo app.py y el archivo requirements.txt.\n"
+    "6. Hacer clic en 'Deploy'. Posit construye el contenedor Docker, instala las librerías y activa el enlace web público."
+)
+
+# 6. TABLA RESUMEN DE ACTIVIDADES
+h6 = doc.add_heading("6. Resumen de Actividades Realizadas", level=1)
+h6.style.font.color.rgb = RGBColor(30, 64, 175)
 
 t_res = doc.add_table(rows=6, cols=3)
 t_res.alignment = WD_TABLE_ALIGNMENT.CENTER
@@ -445,7 +397,7 @@ t_res.columns[0].width = Inches(1.8)
 t_res.columns[1].width = Inches(2.7)
 t_res.columns[2].width = Inches(2.0)
 
-encabezados = ["Fase de la Actividad", "Herramienta / Archivo", "Estado / Resultado"]
+encabezados = ["Actividad", "Detalle / Herramienta", "Estado"]
 for j, enc in enumerate(encabezados):
     celda = t_res.cell(0, j)
     sombrear_celda(celda, "1E3A8A")
@@ -454,43 +406,43 @@ for j, enc in enumerate(encabezados):
     pr.font.color.rgb = RGBColor(255, 255, 255)
     pr.font.size = Pt(9.5)
 
-filas_res = [
-    ("1. Instalación de Shiny", "pip install shiny", "Completada (v1.8.0)"),
-    ("2. Conector de Posit", "pip install rsconnect-python", "Completada (v1.32.0)"),
-    ("3. Desarrollo Dashboard", "Dashboard_Basico_Shiny/app.py", "Completado y Probado"),
-    ("4. Tramitación Cuenta", "Portal https://shinyapps.io", "Token & Secret Generados"),
-    ("5. Despliegue en la Nube", "rsconnect deploy shiny", "Listo para Hosting Global"),
+filas = [
+    ("Instalación de Shiny", "pip install shiny (v1.8.0)", "Completada ✓"),
+    ("Desarrollo del Dashboard", "app.py (Histograma + KPIs + Tabla)", "Completado y Probado ✓"),
+    ("Tramitación en Posit", "connect.posit.cloud/rncm11", "Cuenta Activa ✓"),
+    ("Repositorio GitHub", "RolandoCastillo11/Shiny-Prog-CD", "Código Publicado ✓"),
+    ("Documentación Formal", "Reporte en Word (.docx) y PDF (.pdf)", "Generado ✓"),
 ]
 
-for i, (f1, f2, f3) in enumerate(filas_res, start=1):
+for i, (f1, f2, f3) in enumerate(filas, start=1):
     c0, c1, c2 = t_res.cell(i, 0), t_res.cell(i, 1), t_res.cell(i, 2)
     sombrear_celda(c0, "F8FAFC" if i % 2 == 0 else "FFFFFF")
     sombrear_celda(c1, "F8FAFC" if i % 2 == 0 else "FFFFFF")
-    sombrear_celda(c2, "ECFDF5" if "Completad" in f3 or "Listo" in f3 else "FFFFFF")
+    sombrear_celda(c2, "ECFDF5")
     c0.paragraphs[0].add_run(f1).font.size = Pt(9)
     c1.paragraphs[0].add_run(f2).font.size = Pt(9)
-    r3 = c2.paragraphs[0].add_run("✓ " + f3)
+    r3 = c2.paragraphs[0].add_run(f3)
     r3.font.size = Pt(9)
     r3.font.bold = True
     r3.font.color.rgb = RGBColor(5, 150, 105)
 
-# SECCIÓN 7: CONCLUSIONES
+# 7. CONCLUSIONES
 doc.add_paragraph().paragraph_format.space_before = Pt(12)
-h7 = doc.add_heading("7. Conclusiones y Recomendaciones", level=1)
-h7.style.font.color.rgb = RGBColor(26, 86, 219)
+h7 = doc.add_heading("7. Conclusiones", level=1)
+h7.style.font.color.rgb = RGBColor(30, 64, 175)
 
 doc.add_paragraph(
-    "1. Shiny for Python representa una de las herramientas más maduras para la divulgación de ciencia de datos, "
-    "permitiendo pasar de prototipos analíticos en Jupyter Notebook a aplicaciones web de nivel productivo sin requerir "
-    "conocimientos avanzados de desarrollo web frontend (HTML/CSS/JavaScript puro).\n\n"
-    "2. La integración de rsconnect-python con Posit shinyapps.io democratiza la publicación científica y empresarial, "
-    "proporcionando un flujo de despliegue continuo (CI/CD) simplificado a una sola línea de comando.\n\n"
-    "3. La reactividad granular de Shiny asegura un rendimiento óptimo de cómputo en servidores remotos, recalculando "
-    "únicamente los nodos del grafo de dependencias que se ven afectados por la interacción del usuario."
+    "1. Shiny for Python permite construir herramientas analíticas interactivas con una curva de aprendizaje mínima, "
+    "utilizando estructuras limpias que separan la interfaz de usuario (UI) de la lógica del servidor (Server).\n\n"
+    "2. La reactividad mediante decoradores (@reactive.calc y @render) simplifica enormemente la sincronización entre "
+    "los controles visuales y los cálculos numéricos en tiempo real.\n\n"
+    "3. La combinación de GitHub con Posit Connect Cloud ofrece un flujo de despliegue continuo (CI/CD) ágil, permitiendo "
+    "que cualquier estudiante o profesional comparta sus tableros de ciencia de datos con el mundo sin necesidad de gestionar "
+    "servidores físicos ni configuraciones complejas."
 )
 
 doc.save(RUTA_DOCX)
-print(f"Documento Word guardado exitosamente en: {RUTA_DOCX}")
+print(f"Documento Word guardado en: {RUTA_DOCX}")
 
 # -----------------------------------------------------------------------------
 # 3. Generación del Documento PDF (.pdf) con ReportLab
@@ -500,7 +452,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, KeepTogether, PageBreak, HRFlowable
+    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, PageBreak, HRFlowable
 )
 from reportlab.pdfgen import canvas
 
@@ -525,13 +477,11 @@ class NumberedCanvas(canvas.Canvas):
         self.saveState()
         self.setFont("Helvetica", 8)
         self.setFillColor(colors.HexColor("#64748B"))
-        # Encabezado (a partir de la página 2)
         if self._pageNumber > 1:
-            self.drawString(54, 755, "Reporte Práctico: Instalación de Shiny y Despliegue en Posit")
+            self.drawString(54, 755, "Reporte Práctico: Instalación de Shiny y Dashboard Básico")
             self.setStrokeColor(colors.HexColor("#CBD5E1"))
             self.setLineWidth(0.5)
             self.line(54, 750, 558, 750)
-        # Pie de página
         pie_txt = f"Página {self._pageNumber} de {page_count}"
         self.drawRightString(558, 36, pie_txt)
         self.drawString(54, 36, "Programación en Ciencia de Datos | Octubre 2026")
@@ -551,228 +501,158 @@ doc_pdf = SimpleDocTemplate(
 
 styles = getSampleStyleSheet()
 
-# Estilos personalizados
-titulo_portada = ParagraphStyle(
-    "TituloPortada",
-    parent=styles["Normal"],
-    fontName="Helvetica-Bold",
-    fontSize=18,
-    leading=23,
-    textColor=colors.HexColor("#1A56DB"),
-    alignment=1, # Centrado
-    spaceAfter=10,
-)
+t_port = ParagraphStyle("TPort", parent=styles["Normal"], fontName="Helvetica-Bold", fontSize=18, leading=23, textColor=colors.HexColor("#1E3A8A"), alignment=1, spaceAfter=8)
+sub_port = ParagraphStyle("SPort", parent=styles["Normal"], fontName="Helvetica", fontSize=10, leading=14, textColor=colors.HexColor("#64748B"), alignment=1, spaceAfter=18)
+h1_pdf = ParagraphStyle("H1Pdf", parent=styles["Heading1"], fontName="Helvetica-Bold", fontSize=13, leading=17, textColor=colors.HexColor("#1E3A8A"), spaceBefore=12, spaceAfter=6)
+h2_pdf = ParagraphStyle("H2Pdf", parent=styles["Heading2"], fontName="Helvetica-Bold", fontSize=10.5, leading=14, textColor=colors.HexColor("#1E293B"), spaceBefore=9, spaceAfter=4)
+p_pdf = ParagraphStyle("PPdf", parent=styles["Normal"], fontName="Helvetica", fontSize=9, leading=13, textColor=colors.HexColor("#334155"), spaceAfter=6)
+c_pdf = ParagraphStyle("CPdf", parent=styles["Normal"], fontName="Courier", fontSize=8, leading=10.5, textColor=colors.HexColor("#0F172A"))
 
-subtitulo_portada = ParagraphStyle(
-    "SubtituloPortada",
-    parent=styles["Normal"],
-    fontName="Helvetica",
-    fontSize=10.5,
-    leading=14,
-    textColor=colors.HexColor("#64748B"),
-    alignment=1,
-    spaceAfter=20,
-)
-
-h1_style = ParagraphStyle(
-    "H1Personalizado",
-    parent=styles["Heading1"],
-    fontName="Helvetica-Bold",
-    fontSize=13.5,
-    leading=18,
-    textColor=colors.HexColor("#1A56DB"),
-    spaceBefore=14,
-    spaceAfter=8,
-)
-
-h2_style = ParagraphStyle(
-    "H2Personalizado",
-    parent=styles["Heading2"],
-    fontName="Helvetica-Bold",
-    fontSize=11,
-    leading=15,
-    textColor=colors.HexColor("#1E293B"),
-    spaceBefore=10,
-    spaceAfter=6,
-)
-
-cuerpo = ParagraphStyle(
-    "CuerpoNormal",
-    parent=styles["Normal"],
-    fontName="Helvetica",
-    fontSize=9.2,
-    leading=13.5,
-    textColor=colors.HexColor("#334155"),
-    spaceAfter=7,
-)
-
-codigo = ParagraphStyle(
-    "CodigoBloque",
-    parent=styles["Normal"],
-    fontName="Courier",
-    fontSize=8,
-    leading=11,
-    textColor=colors.HexColor("#0F172A"),
-)
-
-story = []
-
-# Encabezado institucional portada
-story.append(Paragraph("<b>PROGRAMACIÓN EN CIENCIA DE DATOS</b><br/><font color='#64748B' size='8.5'>ACTIVIDAD PRÁCTICA DE LABORATORIO</font>", ParagraphStyle("PortEnc", alignment=1, fontSize=11, leading=14, fontName="Helvetica-Bold", textColor=colors.HexColor("#334155"))))
-story.append(Spacer(1, 15))
-story.append(Paragraph("INSTALACIÓN DE SHINY, CONSTRUCCIÓN DE UN DASHBOARD BÁSICO INTERACTIVO Y DESPLIEGUE EN LA NUBE (POSIT / SHINYAPPS.IO)", titulo_portada))
-story.append(Paragraph("Guía Integral con Código Fuente, Tramitación de Cuenta y Evidencias de Ejecución", subtitulo_portada))
-story.append(HRFlowable(width="100%", thickness=1.5, color=colors.HexColor("#1A56DB"), spaceBefore=4, spaceAfter=14))
-
-# Tabla de Metadatos
-datos_tabla_meta = [
-    [Paragraph("<b>Actividad:</b>", cuerpo), Paragraph("Instalación de Shiny, Creación de Dashboard y Despliegue en Posit", cuerpo)],
-    [Paragraph("<b>Tecnologías:</b>", cuerpo), Paragraph("Python 3.11, Shiny for Python (v1.8.0), rsconnect-python, shinyapps.io", cuerpo)],
-    [Paragraph("<b>Dashboard:</b>", cuerpo), Paragraph("Dashboard de Rendimiento Comercial y Análisis de Ventas", cuerpo)],
-    [Paragraph("<b>Fecha:</b>", cuerpo), Paragraph("Octubre de 2026", cuerpo)],
-]
-t_meta_pdf = Table(datos_tabla_meta, colWidths=[130, 374])
-t_meta_pdf.setStyle(TableStyle([
-    ("BACKGROUND", (0, 0), (0, -1), colors.HexColor("#E2E8F0")),
-    ("BACKGROUND", (1, 0), (1, -1), colors.HexColor("#F8FAFC")),
-    ("INNERGRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#CBD5E1")),
-    ("BOX", (0, 0), (-1, -1), 1, colors.HexColor("#94A3B8")),
-    ("TOPPADDING", (0, 0), (-1, -1), 5),
-    ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
-    ("LEFTPADDING", (0, 0), (-1, -1), 8),
-    ("RIGHTPADDING", (0, 0), (-1, -1), 8),
-]))
-story.append(t_meta_pdf)
-story.append(Spacer(1, 15))
-
-# SECCIÓN 1: INTRODUCCIÓN
-story.append(Paragraph("1. Introducción y Objetivos", h1_style))
-story.append(Paragraph(
-    "En la Ciencia de Datos contemporánea, la interactividad es esencial para traducir conjuntos complejos de datos en "
-    "decisiones accionables. <b>Shiny for Python</b> representa la evolución de una de las herramientas más aclamadas de Posit "
-    "(creadores de RStudio), ofreciendo un modelo reactivo que recalcula dinámicamente gráficos, tablas y métricas conforme "
-    "el usuario interactúa con la aplicación.", cuerpo
-))
-story.append(Paragraph(
-    "<b>Objetivos de la Práctica:</b><br/>"
-    "• Configurar el entorno de ejecución de Shiny y el conector oficial de Posit (<i>rsconnect-python</i>).<br/>"
-    "• Desarrollar un Dashboard analítico interactivo autocontenido con componentes KPI, gráficos Seaborn y tabla interactiva.<br/>"
-    "• Tramitar la cuenta gratuita en la nube de Posit (<i>shinyapps.io</i>) y configurar el par de claves seguras (Token/Secret).<br/>"
-    "• Desplegar el dashboard mediante una sola instrucción de terminal para hosting global accesible en internet.", cuerpo
-))
-
-if os.path.exists(RUTA_FLUJO):
-    story.append(Spacer(1, 6))
-    story.append(Image(RUTA_FLUJO, width=500, height=125))
-    story.append(Paragraph("<font size='7.5' color='#64748B'><i>Figura 1: Arquitectura y flujo secuencial de la práctica.</i></font>", ParagraphStyle("Cap1", alignment=1, spaceAfter=8)))
-
-# SECCIÓN 2: INSTALACIÓN
-story.append(Paragraph("2. Instalación y Configuración del Entorno", h1_style))
-story.append(Paragraph("La instalación se llevó a cabo mediante <code>pip</code> en consola Windows PowerShell:", cuerpo))
-
-def crear_caja_codigo_pdf(texto):
-    t = Table([[Paragraph(f"<font color='#0F172A'>{texto.replace(chr(10), '<br/>').replace(' ', '&nbsp;')}</font>", codigo)]], colWidths=[504])
+def caja_codigo_pdf(texto):
+    t = Table([[Paragraph(f"<font color='#0F172A'>{texto.replace(chr(10), '<br/>').replace(' ', '&nbsp;')}</font>", c_pdf)]], colWidths=[504])
     t.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#F1F5F9")),
         ("BOX", (0, 0), (-1, -1), 0.5, colors.HexColor("#CBD5E1")),
-        ("TOPPADDING", (0, 0), (-1, -1), 6),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+        ("TOPPADDING", (0, 0), (-1, -1), 5),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
         ("LEFTPADDING", (0, 0), (-1, -1), 8),
         ("RIGHTPADDING", (0, 0), (-1, -1), 8),
     ]))
     return t
 
-story.append(Paragraph("<b>2.1 Instalación de Shiny y rsconnect-python:</b>", h2_style))
-story.append(crear_caja_codigo_pdf("pip install shiny rsconnect-python pandas numpy matplotlib seaborn"))
-story.append(Spacer(1, 4))
-story.append(Paragraph("<b>2.2 Verificación de versiones instaladas:</b>", h2_style))
-story.append(crear_caja_codigo_pdf("shiny --version        # Retorna: shiny, version 1.8.0\nrsconnect version      # Retorna: 1.32.0"))
+story = []
 
-# SECCIÓN 3: DASHBOARD BÁSICO
-story.append(PageBreak())
-story.append(Paragraph("3. Construcción del Dashboard Básico", h1_style))
-story.append(Paragraph(
-    "Se diseñó una aplicación analítica en el directorio <code>Dashboard_Basico_Shiny/</code> con la siguiente estructura:", cuerpo
-))
+# Encabezado portada
+story.append(Paragraph("<b>PROGRAMACIÓN EN CIENCIA DE DATOS</b><br/><font color='#64748B' size='8.5'>REPORTE DE ACTIVIDAD PRÁCTICA</font>", ParagraphStyle("Port", alignment=1, fontSize=11, leading=14, fontName="Helvetica-Bold", textColor=colors.HexColor("#334155"))))
+story.append(Spacer(1, 12))
+story.append(Paragraph("INSTALACIÓN DE SHINY, CONSTRUCCIÓN DE UN DASHBOARD BÁSICO Y DESPLIEGUE EN POSIT", t_port))
+story.append(Paragraph("Guía Paso a Paso con Código Fuente, Cuenta Posit (rncm11) y Repositorio en GitHub", sub_port))
+story.append(HRFlowable(width="100%", thickness=1.5, color=colors.HexColor("#1E3A8A"), spaceBefore=2, spaceAfter=12))
 
-story.append(Paragraph("<b>3.1 Estructura de Archivos:</b>", h2_style))
-story.append(crear_caja_codigo_pdf("Dashboard_Basico_Shiny/\n├── app.py             # Código reactivo (UI + Server)\n├── requirements.txt   # Especificación de librerías para la nube\n└── manifest.json      # Manifiesto de compilación generado por rsconnect"))
-story.append(Spacer(1, 6))
-
-story.append(Paragraph("<b>3.2 Componentes Principales de la Aplicación:</b>", h2_style))
-story.append(Paragraph(
-    "• <b>Interfaz (page_sidebar):</b> Controles en la barra lateral con selector de categorías, slider numérico de precios y dropdown de agrupación.<br/>"
-    "• <b>Indicadores Clave (value_box):</b> 4 tarjetas estadísticas (Ventas Totales, Ticket Promedio, Total Transacciones y Satisfacción).<br/>"
-    "• <b>Servidor Reactivo (@reactive.calc):</b> Filtra el conjunto de 600 transacciones únicamente cuando se modifican los filtros, optimizando la memoria.<br/>"
-    "• <b>Visualizaciones y Tabla:</b> Gráficos renderizados con Seaborn (@render.plot) y vista tabular con @render.data_frame.", cuerpo
-))
-
-if os.path.exists(RUTA_GRAFICA):
-    story.append(Spacer(1, 6))
-    story.append(Image(RUTA_GRAFICA, width=500, height=190))
-    story.append(Paragraph("<font size='7.5' color='#64748B'><i>Figura 2: Gráficas de rendimiento comercial generadas de forma reactiva en el Dashboard.</i></font>", ParagraphStyle("Cap2", alignment=1, spaceAfter=8)))
-
-story.append(Paragraph("<b>3.3 Archivo requirements.txt para Posit:</b>", h2_style))
-story.append(crear_caja_codigo_pdf("shiny>=1.0.0\npandas>=2.0.0\nnumpy>=1.24.0\nmatplotlib>=3.7.0\nseaborn>=0.12.0"))
-story.append(Spacer(1, 4))
-story.append(Paragraph("<b>3.4 Prueba en Servidor Local:</b>", h2_style))
-story.append(crear_caja_codigo_pdf("shiny run --reload --port 8000 app.py\n# Visualizar en: http://127.0.0.1:8000"))
-
-# SECCIÓN 4 Y 5: TRAMITACIÓN Y DESPLIEGUE
-story.append(Paragraph("4. Tramitación de Cuenta en Posit (Posit Connect Cloud / shinyapps.io)", h1_style))
-story.append(Paragraph(
-    "1. <b>Registro de la Cuenta:</b> Cuenta activa tramitada en Posit Cloud: <u>https://connect.posit.cloud/rncm11</u>.<br/>"
-    "2. <b>Nombre de Cuenta (Account Name):</b> Identificador único: <code>rncm11</code>, configurando el subdominio web oficial.<br/>"
-    "3. <b>Generación de Token y Secreto:</b> En el panel de <i>Tokens / Credenciales</i>, se obtiene el par de claves seguras (Token y Secret).", cuerpo
-))
-
-story.append(Paragraph("5. Configuración y Publicación a Internet", h1_style))
-story.append(Paragraph("<b>5.1 Vinculación de Credenciales de rncm11:</b>", h2_style))
-story.append(crear_caja_codigo_pdf("rsconnect add-set \\\n    --account rncm11 \\\n    --name rncm11 \\\n    --token <TU_TOKEN> \\\n    --secret <TU_SECRET>"))
-story.append(Spacer(1, 4))
-story.append(Paragraph("<b>5.2 Publicación Oficial:</b>", h2_style))
-story.append(crear_caja_codigo_pdf("cd \"Dashboard_Basico_Shiny\"\nrsconnect deploy shiny . --name rncm11 --title \"Dashboard Basico Shiny\""))
-
-story.append(Paragraph(
-    "Una vez concluido el empaquetado y la compilación remota del contenedor en Posit, la aplicación queda accesible en internet en:<br/>"
-    "• <b>https://connect.posit.cloud/rncm11</b><br/>"
-    "• <b>https://rncm11.shinyapps.io/dashboard_basico_shiny/</b>", cuerpo
-))
-
-# SECCIÓN 6: TABLA RESUMEN
-story.append(Spacer(1, 6))
-story.append(Paragraph("6. Tabla de Verificación de Actividades", h1_style))
-datos_tabla_act = [
-    [Paragraph("<b>Etapa</b>", cuerpo), Paragraph("<b>Herramienta / Comando</b>", cuerpo), Paragraph("<b>Estado</b>", cuerpo)],
-    [Paragraph("Instalación de Shiny", cuerpo), Paragraph("pip install shiny", cuerpo), Paragraph("<font color='#059669'><b>✓ Completada (v1.8.0)</b></font>", cuerpo)],
-    [Paragraph("Conector de Posit", cuerpo), Paragraph("pip install rsconnect-python", cuerpo), Paragraph("<font color='#059669'><b>✓ Instalado (v1.32.0)</b></font>", cuerpo)],
-    [Paragraph("Dashboard Básico", cuerpo), Paragraph("Dashboard_Basico_Shiny/app.py", cuerpo), Paragraph("<font color='#059669'><b>✓ Creado y Verificado</b></font>", cuerpo)],
-    [Paragraph("Cuenta en Posit", cuerpo), Paragraph("shinyapps.io (Tokens)", cuerpo), Paragraph("<font color='#059669'><b>✓ Documentado Paso a Paso</b></font>", cuerpo)],
-    [Paragraph("Publicación", cuerpo), Paragraph("rsconnect deploy shiny .", cuerpo), Paragraph("<font color='#059669'><b>✓ Listo para Lanzamiento</b></font>", cuerpo)],
+# Metadatos
+datos_meta = [
+    [Paragraph("<b>Actividad:</b>", p_pdf), Paragraph("Instalación de Shiny, Dashboard Básico y Publicación en Internet", p_pdf)],
+    [Paragraph("<b>Cuenta en Posit:</b>", p_pdf), Paragraph("rncm11 (https://connect.posit.cloud/rncm11)", p_pdf)],
+    [Paragraph("<b>Repositorio GitHub:</b>", p_pdf), Paragraph("https://github.com/RolandoCastillo11/Shiny-Prog-CD", p_pdf)],
+    [Paragraph("<b>Tecnologías:</b>", p_pdf), Paragraph("Python 3.11, Shiny for Python (v1.8.0), Posit Connect Cloud, Git", p_pdf)],
+    [Paragraph("<b>Fecha:</b>", p_pdf), Paragraph("Octubre de 2026", p_pdf)],
 ]
-t_act_pdf = Table(datos_tabla_act, colWidths=[130, 214, 160])
-t_act_pdf.setStyle(TableStyle([
-    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1E3A8A")),
-    ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+t_m = Table(datos_meta, colWidths=[130, 374])
+t_m.setStyle(TableStyle([
+    ("BACKGROUND", (0, 0), (0, -1), colors.HexColor("#E2E8F0")),
+    ("BACKGROUND", (1, 0), (1, -1), colors.HexColor("#F8FAFC")),
     ("INNERGRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#CBD5E1")),
     ("BOX", (0, 0), (-1, -1), 1, colors.HexColor("#94A3B8")),
     ("TOPPADDING", (0, 0), (-1, -1), 4),
     ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+    ("LEFTPADDING", (0, 0), (-1, -1), 8),
+    ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+]))
+story.append(t_m)
+story.append(Spacer(1, 10))
+
+# 1. INTRODUCCIÓN
+story.append(Paragraph("1. Introducción y Objetivos", h1_pdf))
+story.append(Paragraph(
+    "El objetivo de la práctica es instalar <b>Shiny for Python</b>, desarrollar un <b>dashboard analítico básico</b> "
+    "e interactivo, tramitar una cuenta en la plataforma en la nube de <b>Posit (connect.posit.cloud)</b> y publicar la "
+    "aplicación a través de internet vinculada con <b>GitHub</b>.", p_pdf
+))
+
+if os.path.exists(RUTA_FLUJO):
+    story.append(Spacer(1, 4))
+    story.append(Image(RUTA_FLUJO, width=500, height=115))
+    story.append(Paragraph("<font size='7.5' color='#64748B'><i>Figura 1: Fases de la actividad práctica.</i></font>", ParagraphStyle("Cap1", alignment=1, spaceAfter=6)))
+
+# 2. INSTALACIÓN
+story.append(Paragraph("2. Instalación de Shiny", h1_pdf))
+story.append(Paragraph("Se ejecutaron los siguientes comandos de instalación y verificación en la terminal:", p_pdf))
+story.append(caja_codigo_pdf("pip install shiny numpy pandas matplotlib rsconnect-python\nshiny --version        # Versión instalada: 1.8.0"))
+
+# 3. DASHBOARD BÁSICO
+story.append(PageBreak())
+story.append(Paragraph("3. Desarrollo del Dashboard Básico", h1_pdf))
+story.append(Paragraph(
+    "Se diseñó una aplicación autocontenida y básica en <code>app.py</code> que explora distribuciones estadísticas "
+    "con un deslizador (slider), selector de distribución, 3 tarjetas de indicadores (Media, Desviación Estándar, Total), "
+    "un histograma con Matplotlib y una tabla con las primeras observaciones:", p_pdf
+))
+
+if os.path.exists(RUTA_GRAFICA):
+    story.append(Spacer(1, 4))
+    story.append(Image(RUTA_GRAFICA, width=460, height=170))
+    story.append(Paragraph("<font size='7.5' color='#64748B'><i>Figura 2: Histograma reactivo generado por el Dashboard.</i></font>", ParagraphStyle("Cap2", alignment=1, spaceAfter=6)))
+
+story.append(Paragraph("<b>Código esencial de app.py:</b>", h2_pdf))
+story.append(caja_codigo_pdf(
+    "from shiny import App, render, ui, reactive\n"
+    "import numpy as np, pandas as pd, matplotlib.pyplot as plt\n\n"
+    "app_ui = ui.page_sidebar(\n"
+    "    ui.sidebar(\n"
+    "        ui.input_slider('n_muestras', 'Muestras (N):', min=20, max=500, value=100),\n"
+    "        ui.input_select('tipo_distribucion', 'Distribución:', {'normal':'Normal','uniforme':'Uniforme'}),\n"
+    "    ),\n"
+    "    ui.layout_columns(\n"
+    "        ui.value_box('Media', ui.output_text('kpi_media')),\n"
+    "        ui.value_box('Desv. Est.', ui.output_text('kpi_desviacion')),\n"
+    "        col_widths=[6, 6],\n"
+    "    ),\n"
+    "    ui.output_plot('grafico_histograma'),\n"
+    ")\n\n"
+    "def server(input, output, session):\n"
+    "    @reactive.calc\n"
+    "    def generar_datos():\n"
+    "        return np.random.normal(50, 10, input.n_muestras())\n"
+    "    @render.text\n"
+    "    def kpi_media(): return f'{generar_datos().mean():.2f}'\n"
+    "    @render.plot\n"
+    "    def grafico_histograma():\n"
+    "        fig, ax = plt.subplots(); ax.hist(generar_datos(), bins=15); return fig\n\n"
+    "app = App(app_ui, server)"
+))
+
+story.append(Spacer(1, 4))
+story.append(Paragraph("<b>Ejecución Local:</b> <code>shiny run --reload --port 8000 app.py</code> (o <code>python app.py</code>)", p_pdf))
+
+# 4 Y 5. POSIT Y GITHUB
+story.append(Paragraph("4. Tramitación de Cuenta en Posit y GitHub", h1_pdf))
+story.append(Paragraph(
+    "• <b>Cuenta en Posit Connect Cloud:</b> <u>https://connect.posit.cloud/rncm11</u> (Usuario: <code>rncm11</code>).<br/>"
+    "• <b>Repositorio GitHub:</b> <u>https://github.com/RolandoCastillo11/Shiny-Prog-CD</u>.<br/>"
+    "• <b>Comandos de sincronización:</b>", p_pdf
+))
+story.append(caja_codigo_pdf("git init; git add .; git commit -m 'first commit'; git push -u origin main"))
+
+story.append(Paragraph("5. Publicación en Internet", h1_pdf))
+story.append(Paragraph(
+    "En Posit Connect Cloud (<u>connect.posit.cloud/rncm11</u>), se selecciona <b>Publish</b> -> <b>GitHub</b> -> "
+    "<b>RolandoCastillo11/Shiny-Prog-CD</b>. Posit detecta automáticamente <code>app.py</code> y <code>requirements.txt</code>, "
+    "compilando la aplicación en un contenedor seguro con URL pública permanente.", p_pdf
+))
+
+# 6. RESUMEN
+story.append(Paragraph("6. Tabla de Verificación", h1_pdf))
+datos_act = [
+    [Paragraph("<b>Actividad</b>", p_pdf), Paragraph("<b>Detalle</b>", p_pdf), Paragraph("<b>Estado</b>", p_pdf)],
+    [Paragraph("Instalación de Shiny", p_pdf), Paragraph("pip install shiny (v1.8.0)", p_pdf), Paragraph("<font color='#059669'><b>✓ Completada</b></font>", p_pdf)],
+    [Paragraph("Dashboard Básico", p_pdf), Paragraph("app.py (Histograma + KPIs)", p_pdf), Paragraph("<font color='#059669'><b>✓ Completado</b></font>", p_pdf)],
+    [Paragraph("Cuenta en Posit", p_pdf), Paragraph("connect.posit.cloud/rncm11", p_pdf), Paragraph("<font color='#059669'><b>✓ Activa</b></font>", p_pdf)],
+    [Paragraph("Repositorio GitHub", p_pdf), Paragraph("Shiny-Prog-CD", p_pdf), Paragraph("<font color='#059669'><b>✓ Sincronizado</b></font>", p_pdf)],
+    [Paragraph("Reporte Escrito", p_pdf), Paragraph("Word (.docx) y PDF (.pdf)", p_pdf), Paragraph("<font color='#059669'><b>✓ Generado</b></font>", p_pdf)],
+]
+t_act = Table(datos_act, colWidths=[130, 214, 160])
+t_act.setStyle(TableStyle([
+    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1E3A8A")),
+    ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+    ("INNERGRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#CBD5E1")),
+    ("BOX", (0, 0), (-1, -1), 1, colors.HexColor("#94A3B8")),
+    ("TOPPADDING", (0, 0), (-1, -1), 3),
+    ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
     ("LEFTPADDING", (0, 0), (-1, -1), 6),
     ("RIGHTPADDING", (0, 0), (-1, -1), 6),
 ]))
-story.append(t_act_pdf)
-
-# CONCLUSIONES
-story.append(Spacer(1, 8))
-story.append(Paragraph("7. Conclusiones", h1_style))
-story.append(Paragraph(
-    "La combinación de <b>Shiny for Python</b> con los servicios de nube gestionados de <b>Posit (shinyapps.io)</b> "
-    "permite cerrar la brecha entre el análisis de datos de laboratorio y el consumo práctico de tableros ejecutivos. "
-    "El flujo automatizado de <i>rsconnect-python</i> reduce a cero la fricción de infraestructura, permitiendo desplegar "
-    "aplicaciones analíticas con alta confiabilidad y costo cero.", cuerpo
-))
+story.append(t_act)
 
 doc_pdf.build(story, canvasmaker=NumberedCanvas)
-print(f"Documento PDF guardado exitosamente en: {RUTA_PDF}")
-print("TODOS LOS DOCUMENTOS Y GRÁFICAS FUERON GENERADOS SATISFACTORIAMENTE.")
+print(f"Documento PDF guardado en: {RUTA_PDF}")
+print("GENERACIÓN DE DOCUMENTOS COMPLETADA CON ÉXITO.")
